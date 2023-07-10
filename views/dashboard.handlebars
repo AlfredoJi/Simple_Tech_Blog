@@ -1,0 +1,16 @@
+{{#each posts as |post|}}
+<div class="card post-list">
+  <div class="card-body">
+    <h5 class="card-title text-center">Title: {{post.title}} Date created: {{format_date post.date_created}}</h5>
+  </div>
+  <a href="#"><button class="btn btn-success" type="button">Update Post</button></a>
+  <button class="btn btn-danger" type="button" data-id="{{id}}">Delete Post</button>
+</div>
+{{/each}}
+
+
+<div class="d-grid gap-2">
+  <a href=/newpost><button class="btn btn-primary" type="button">+ New Post</button></a>
+</div>
+
+<script src="/js/post.js"></script>

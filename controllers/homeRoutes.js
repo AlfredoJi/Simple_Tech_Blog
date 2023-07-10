@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const withAuth = require('./../utils/auth');
-const { User, Post } = require('../models');
+const { User, Post, Comment } = require('../models');
 
 router.get('/', async (req, res) => {
     try {
@@ -26,6 +26,55 @@ router.get('/', async (req, res) => {
     }
 });
 
+router.get('/post/:id', withAuth, async (req, res) => {
+    try {
+        const postData = await Post.findByPk(req.params.id, {
+            include: [
+                {
+                    model: User,
+                    attributes: ['name'],
+                },
+                {
+                    model: Comment,
+                    include: [{
+                        model: User,
+                        attributes: ['name']
+                    }]
+                },
+            ],
+        });
+
+        const post = postData.toJSON();
+
+        res.render('post', {
+            ...post,
+            logged_in: req.session.logged_in
+        });
+
+    } catch (err) {
+        res.status(500).json(err);
+    }
+});
+
+router.get('/dashboard', withAuth, async (req, res) => {
+    try {
+
+        const userData = await User.findByPk(req.session.user_id, {
+            attributes: { exclude: ['password'] },
+            include: [{ model: Post }],
+        });
+
+        const user = userData.toJSON();
+
+        res.render('dashboard', {
+            ...user,
+            logged_in: true
+        });
+    } catch (err) {
+        res.status(500).json(err);
+    }
+});
+
 router.get('/login', (req, res) => {
     if (req.session.logged_in) {
         res.redirect('/dashboard');
@@ -34,5 +83,20 @@ router.get('/login', (req, res) => {
 
     res.render('login');
 });
+
+router.get('/signup', (req, res) => {
+
+    res.render('signup');
+});
+
+router.get('/newpost', (req, res) => {
+
+    if (req.session.logged_in) {
+        return res.render('newpost');
+    }
+
+    res.render('login');
+});
+
 
 module.exports = router;
